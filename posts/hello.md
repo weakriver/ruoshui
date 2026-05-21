@@ -3,6 +3,7 @@ title: Projective Attention
 date: 2026-05-10
 tags: [好玩的]
 excerpt: A projective geometry perspective on attention mechanisms. 
+related: [hpa, projective-attention]
 ---
 
 *A projective geometry framework that reveals attention as a data-dependent neural network, and give us a fresh perspective on attention.*
@@ -375,7 +376,7 @@ The framework is not merely a metaphor. It is the literal geometry of what $q^\t
 ```bibtex
 @misc{li2026projectiveattn,
   title   = {Projective Attention: A Projective Geometry Framework for Attention Mechanism},
-  url     = {https://weakriver.github.io/#/post/projective-attention},
+  url     = {https://antheali.notion.site/eses},
   author  = {Anthea Li},
   journal = {RuoShui},
   year    = {2026},

@@ -3,6 +3,7 @@ title: Hyperplane Projection Attention
 date: 2026-05-15
 tags: [好玩的]
 excerpt: Attention as Hyperplane Projections 
+related: [hello, projective-attention]
 ---
 
 *A geometric derivation of Hyperplane-Projection Attention, what the experiments actually support, and where the mechanism is still unresolved.*
@@ -630,7 +631,7 @@ The controls changed the conclusion. The correct claim is not “the exact proje
 ```bibtex
 @misc{li2026hpa,
   title   = {Hyperplane Projection Attention},
-  url     = {[https://weakriver.github.io/](https://weakriver.github.io/#/post/hpa)},
+  url     = {},
   author  = {Anthea Li},
   journal = {RuoShui},
   year    = {2026},
