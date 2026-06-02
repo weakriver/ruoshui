@@ -12,7 +12,23 @@ const MANIFEST_URL = POSTS_DIR + "manifest.json";
 const state = {
   posts: null,     // full array of {slug, title, date, tags, excerpt, body}
   activeTag: null,
+  uiLang: "zh",    // "zh" or "en" — UI chrome language (tags, "全部" chip, etc.)
 };
+
+/* ---------- UI language: tag translations ----------
+ * Only known UI strings are translated. Unknown tags (e.g. "attention",
+ * "transformers") are left as-is — they're already English. */
+const TAG_TRANSLATIONS = {
+  "全部":   "All",
+  "好玩的": "Fun stuff",
+  "念":     "Thoughts",
+  "观点":   "Opinion",
+  "方法":   "Method",
+};
+function tagLabel(t) {
+  if (state.uiLang === "en" && TAG_TRANSLATIONS[t]) return TAG_TRANSLATIONS[t];
+  return t;
+}
 
 /* ---------- Frontmatter parsing ---------- */
 // Minimal YAML-ish parser for: title, date, tags, excerpt, lang.
@@ -383,14 +399,14 @@ async function renderList() {
   };
 
   tagBar.appendChild(
-    makeChip("全部", state.activeTag === null, () => {
+    makeChip(tagLabel("全部"), state.activeTag === null, () => {
       state.activeTag = null;
       renderList();
     })
   );
   for (const t of allTags) {
     tagBar.appendChild(
-      makeChip(t, state.activeTag === t, () => {
+      makeChip(tagLabel(t), state.activeTag === t, () => {
         state.activeTag = state.activeTag === t ? null : t;
         renderList();
       })
@@ -402,7 +418,10 @@ async function renderList() {
     : posts;
 
   if (!filtered.length) {
-    status.textContent = `没有标签为「${state.activeTag}」的文章。`;
+    status.textContent =
+      state.uiLang === "en"
+        ? `No posts tagged "${tagLabel(state.activeTag)}".`
+        : `没有标签为「${state.activeTag}」的文章。`;
     listEl.innerHTML = "";
     return;
   }
@@ -411,7 +430,7 @@ async function renderList() {
   listEl.innerHTML = filtered
     .map((p) => {
       const tags = (p.tags || [])
-        .map((t) => `<span class="post-tag">${escapeHtml(t)}</span>`)
+        .map((t) => `<span class="post-tag">${escapeHtml(tagLabel(t))}</span>`)
         .join("");
       const excerpt = autoExcerpt(p);
       return `
@@ -462,7 +481,7 @@ async function renderPost(slug) {
   dateEl.textContent = formatDate(post.date, lang);
   dateEl.setAttribute("datetime", post.date || "");
   tagsEl.innerHTML = (post.tags || [])
-    .map((t) => `<span class="post-tag">${escapeHtml(t)}</span>`)
+    .map((t) => `<span class="post-tag">${escapeHtml(tagLabel(t))}</span>`)
     .join("");
 
   // Pre-extract math, run marked, restore math via KaTeX
@@ -537,10 +556,41 @@ function setupTheme() {
   });
 }
 
+/* ---------- UI language ---------- */
+function getInitialLang() {
+  try {
+    const stored = localStorage.getItem("ruoshui-lang");
+    if (stored === "en" || stored === "zh") return stored;
+  } catch (_) {}
+  return "zh";
+}
+function applyLang(lang) {
+  state.uiLang = lang;
+  document.documentElement.dataset.lang = lang;
+  try { localStorage.setItem("ruoshui-lang", lang); } catch (_) {}
+}
+function setupLang() {
+  applyLang(getInitialLang());
+  const btn = document.getElementById("lang-toggle");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    applyLang(state.uiLang === "zh" ? "en" : "zh");
+    // Re-render whichever view is currently visible so tag chips refresh.
+    const onPost = !document.getElementById("view-post").hidden;
+    if (onPost) {
+      const slug = document.getElementById("view-post").dataset.slug;
+      if (slug) renderPost(slug);
+    } else {
+      renderList();
+    }
+  });
+}
+
 /* ---------- Boot ---------- */
 window.addEventListener("hashchange", route);
 window.addEventListener("DOMContentLoaded", () => {
   setupTheme();
+  setupLang();
   const yearEl = document.getElementById("footer-year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
   route();
@@ -556,4 +606,17 @@ window.addEventListener("DOMContentLoaded", () => {
       document.documentElement.dataset.theme = "dark";
     }
   } catch (_) {}
+})();
+
+(function preApplyLang() {
+  try {
+    const stored = localStorage.getItem("ruoshui-lang");
+    if (stored === "en" || stored === "zh") {
+      document.documentElement.dataset.lang = stored;
+    } else {
+      document.documentElement.dataset.lang = "zh";
+    }
+  } catch (_) {
+    document.documentElement.dataset.lang = "zh";
+  }
 })();
